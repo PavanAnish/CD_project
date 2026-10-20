@@ -54,8 +54,8 @@ The frontend files, if included, provide the interface for entering source code 
 2. Open the project folder in a terminal.
 3. Install the required dependencies, if any.
 4. Run the application using the instructions agreed upon by the team.
-. Run the Application
-  python app.py
+ 
+    python app.py
 
 ## Project Team
 Developed collaboratively as an academic mini project.
