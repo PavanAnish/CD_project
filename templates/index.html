@@ -1,1 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#101c1a">
+	<title>Declaration Lab | Variable Compiler</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+	<header class="topbar">
+		<a class="brand" href="/" aria-label="Declaration Lab home">
+			<span class="brand-mark" aria-hidden="true">D<span>.</span></span>
+			<span>DECLARATION <b>LAB</b></span>
+		</a>
+		<div class="topbar-meta"><span class="live-dot"></span> COMPILER ONLINE <span class="version">v1.0</span></div>
+	</header>
 
+	<main class="workspace">
+		<section class="intro" aria-labelledby="page-title">
+			<div>
+				<p class="eyebrow">LANGUAGE TOOLING / 001</p>
+				<h1 id="page-title">Variable declaration <em>compiler</em></h1>
+				<p class="intro-copy">Run source through lexical, syntax, and semantic analysis.</p>
+			</div>
+			<div class="supported-types"><span>SUPPORTED TYPES</span><b>int</b><b>float</b><b>double</b><b>char</b><b>bool</b></div>
+		</section>
+
+		<section class="workbench" aria-label="Compiler workbench">
+			<div class="editor-panel">
+				<div class="panel-heading">
+					<div><span class="file-icon" aria-hidden="true">{ }</span><h2>Source</h2><span class="file-name">main.cdl</span></div>
+					<button class="text-button" id="reset-button" type="button" title="Restore the example source">Reset</button>
+				</div>
+				<label class="visually-hidden" for="source-code">Source code</label>
+				<textarea id="source-code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="editor-hint">int age = 20;
+float mark = 95.5;
+char grade = 'A';
+bool passed = true;
+age = 21;</textarea>
+				<div class="editor-footer">
+					<span id="editor-hint">Statements end with a semicolon</span>
+					<span id="line-count">5 LINES</span>
+				</div>
+			</div>
+
+			<div class="run-column">
+				<div class="pipeline" aria-label="Compiler stages">
+					<span><i>01</i> LEX</span><b aria-hidden="true">›</b><span><i>02</i> PARSE</span><b aria-hidden="true">›</b><span><i>03</i> CHECK</span>
+				</div>
+				<button class="compile-button" id="compile-button" type="button">
+					<span class="play-icon" aria-hidden="true">▶</span><span>Compile source</span><span class="button-shortcut">CTRL ↵</span>
+				</button>
+				<p class="run-note">Declarations and assignments are checked in source order.</p>
+			</div>
+
+			<div class="results-panel" aria-live="polite" aria-busy="false">
+				<div class="panel-heading results-heading">
+					<div><span class="result-mark" aria-hidden="true">↳</span><h2>Results</h2></div>
+					<span class="status-pill idle" id="status-pill">READY</span>
+				</div>
+				<div class="result-content" id="result-content">
+					<div class="empty-state"><span class="empty-glyph" aria-hidden="true">⌁</span><p>Compilation output will appear here.</p><span>Run the example or enter your own code.</span></div>
+				</div>
+			</div>
+		</section>
+		<footer class="page-footer"><span>EDUCATIONAL COMPILER</span><span>LEXICAL ANALYSIS <i>·</i> RECURSIVE DESCENT <i>·</i> SYMBOL TABLE</span></footer>
+	</main>
+</body>
+</html>
