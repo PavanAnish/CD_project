@@ -1,3 +1,44 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, Optional
+
+
+@dataclass
+class Symbol:
+    name: str
+    data_type: str
+    value: Any = None
+    declared_line: Optional[int] = None
+
+
+class SymbolTable:
+    def __init__(self) -> None:
+        self._symbols: Dict[str, Symbol] = {}
+
+    def declare(self, name: str, data_type: str, line: Optional[int] = None) -> Symbol:
+        if name in self._symbols:
+            raise ValueError(self._message(f"Variable '{name}' already declared", line))
+        symbol = Symbol(name=name, data_type=data_type, declared_line=line)
+        self._symbols[name] = symbol
+        return symbol
+
+    def lookup(self, name: str, line: Optional[int] = None) -> Symbol:
+        if name not in self._symbols:
+            raise KeyError(self._message(f"Variable '{name}' not declared", line))
+        return self._symbols[name]
+
+    def assign(self, name: str, value: Any, line: Optional[int] = None) -> Symbol:
+        symbol = self.lookup(name, line)
+        val_type = None
+        if getattr(value, "value_type", None) == "ID":
+            rhs_symbol = self.lookup(str(value.value), line)
+            val_type = rhs_symbol.data_type
+            value = rhs_symbol.value
+        else:
+            val_type = _infer_value_type(value)
+        if val_type is not None and not _is_compatible(symbol.data_type, val_type):
+            raise TypeError(self._message(f"Cannot assign {val_type} to {symbol.data_type}", line))
         symbol.value = _value_contents(value)
         return symbol
 
@@ -72,8 +113,22 @@ def _check_identifier_reference(table: SymbolTable, value: Any) -> None:
 
 
 def _value_contents(value: Any) -> Any:
-    """Unwrap the parser's Value AST node; leave ordinary Python values alone."""
-    return getattr(value, "value", value)
+    """Unwrap the parser's Value AST node; coerce to proper Python type."""
+    raw = getattr(value, "value", value)
+    vtype = getattr(value, "value_type", None)
+    if vtype == "NUMBER":
+        s = str(raw)
+        try:
+            if any(mark in s.lower() for mark in (".", "e")):
+                return float(s)
+            return int(s)
+        except (ValueError, OverflowError):
+            return raw
+    if vtype == "BOOL_LITERAL":
+        if isinstance(raw, bool):
+            return raw
+        return str(raw).lower() == "true"
+    return raw
 
 
 def _infer_value_type(value: Any) -> Optional[str]:
@@ -101,11 +156,16 @@ def _infer_value_type(value: Any) -> Optional[str]:
 
 
 def _is_compatible(destination: str, source: str) -> bool:
-    """Allow exact matches and widening numeric conversions."""
+    """Allow exact matches and widening numeric conversions.
+
+    Widening: int → float, int → double, float → double
+    i.e. a wider destination can accept a narrower source.
+    """
     if destination == source:
         return True
+    # Maps source type → set of destination types it can widen into
     widening = {"int": {"float", "double"}, "float": {"double"}}
-    return source in widening.get(destination, set())
+    return destination in widening.get(source, set())
 
 
 if __name__ == "__main__":
