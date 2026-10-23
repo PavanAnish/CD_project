@@ -1,3 +1,44 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, Optional
+
+
+@dataclass
+class Symbol:
+    name: str
+    data_type: str
+    value: Any = None
+    declared_line: Optional[int] = None
+
+
+class SymbolTable:
+    def __init__(self) -> None:
+        self._symbols: Dict[str, Symbol] = {}
+
+    def declare(self, name: str, data_type: str, line: Optional[int] = None) -> Symbol:
+        if name in self._symbols:
+            raise ValueError(self._message(f"Variable '{name}' already declared", line))
+        symbol = Symbol(name=name, data_type=data_type, declared_line=line)
+        self._symbols[name] = symbol
+        return symbol
+
+    def lookup(self, name: str, line: Optional[int] = None) -> Symbol:
+        if name not in self._symbols:
+            raise KeyError(self._message(f"Variable '{name}' not declared", line))
+        return self._symbols[name]
+
+    def assign(self, name: str, value: Any, line: Optional[int] = None) -> Symbol:
+        symbol = self.lookup(name, line)
+        val_type = None
+        if getattr(value, "value_type", None) == "ID":
+            rhs_symbol = self.lookup(str(value.value), line)
+            val_type = rhs_symbol.data_type
+            value = rhs_symbol.value
+        else:
+            val_type = _infer_value_type(value)
+        if val_type is not None and not _is_compatible(symbol.data_type, val_type):
+            raise TypeError(self._message(f"Cannot assign {val_type} to {symbol.data_type}", line))
         symbol.value = _value_contents(value)
         return symbol
 

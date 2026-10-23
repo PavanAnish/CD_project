@@ -1,4 +1,61 @@
 
+from __future__ import annotations
+
+from typing import Any, List
+
+DATA_TYPES = {"int", "float", "double", "char", "bool"}
+
+
+class Token:
+    """Represents a lexical token with type, value, line, and column position."""
+
+    def __init__(self, type: str, value: Any, line: int = 1, column: int = 1):
+        self.type = type
+        self.value = value
+        self.line = line
+        self.column = column
+
+    def __repr__(self) -> str:
+        return f"Token({self.type!r}, {self.value!r}, line={self.line}, col={self.column})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Token):
+            return False
+        return (
+            self.type == other.type
+            and self.value == other.value
+            and self.line == other.line
+            and self.column == other.column
+        )
+
+
+class LexerError(Exception):
+    def __init__(self, message: str, line: int, column: int):
+        self.message = message
+        self.line = line
+        self.column = column
+        super().__init__(f"Lexer Error at line {line}, col {column}: {message}")
+
+
+def tokenize(source_code: str) -> List[Token]:
+    tokens: List[Token] = []
+    i = 0
+    line = 1
+    column = 1
+    length = len(source_code)
+
+    while i < length:
+        char = source_code[i]
+
+        if char.isspace():
+            if char == "\n":
+                line += 1
+                column = 1
+            else:
+                column += 1
+            i += 1
+            continue
+
         # Line comments are accepted as a convenient source-code feature.
         if source_code.startswith("//", i):
             while i < length and source_code[i] != "\n":
