@@ -14,7 +14,7 @@
 			<span class="brand-mark" aria-hidden="true">D<span>.</span></span>
 			<span>DECLARATION <b>LAB</b></span>
 		</a>
-		<div class="topbar-meta"><span class="live-dot"></span> COMPILER ONLINE <span class="version">v1.0</span></div>
+		<div class="topbar-meta"><span class="live-dot"></span> COMPILER ONLINE <span class="version">v2.0</span></div>
 	</header>
 
 	<main class="workspace">
@@ -46,8 +46,8 @@ age = 21;</textarea>
 			</div>
 
 			<div class="run-column">
-				<div class="pipeline" aria-label="Compiler stages">
-					<span><i>01</i> LEX</span><b aria-hidden="true">›</b><span><i>02</i> PARSE</span><b aria-hidden="true">›</b><span><i>03</i> CHECK</span>
+				<div class="pipeline" aria-label="Compiler stages" id="pipeline-stages">
+					<span class="stage" id="stage-lexical"><i>01</i> LEX</span><b aria-hidden="true">›</b><span class="stage" id="stage-syntax"><i>02</i> PARSE</span><b aria-hidden="true">›</b><span class="stage" id="stage-semantic"><i>03</i> CHECK</span>
 				</div>
 				<button class="compile-button" id="compile-button" type="button">
 					<span class="play-icon" aria-hidden="true">▶</span><span>Compile source</span><span class="button-shortcut">CTRL ↵</span>
@@ -60,8 +60,19 @@ age = 21;</textarea>
 					<div><span class="result-mark" aria-hidden="true">↳</span><h2>Results</h2></div>
 					<span class="status-pill idle" id="status-pill">READY</span>
 				</div>
-				<div class="result-content" id="result-content">
+
+				<!-- Result tabs -->
+				<div class="result-tabs" role="tablist" aria-label="Output panels">
+					<button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-output"  id="btn-output"  type="button">OUTPUT</button>
+					<button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-grammar" id="btn-grammar" type="button">GRAMMAR</button>
+				</div>
+
+				<div class="result-content" id="tab-output" role="tabpanel" aria-labelledby="btn-output">
 					<div class="empty-state"><span class="empty-glyph" aria-hidden="true">⌁</span><p>Compilation output will appear here.</p><span>Run the example or enter your own code.</span></div>
+				</div>
+
+				<div class="result-content hidden" id="tab-grammar" role="tabpanel" aria-labelledby="btn-grammar">
+					<div class="empty-state"><span class="empty-glyph" aria-hidden="true">⌁</span><p>Grammar will load after first compilation.</p><span>Click Compile source to populate this panel.</span></div>
 				</div>
 			</div>
 		</section>

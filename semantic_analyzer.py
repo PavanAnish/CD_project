@@ -12,7 +12,15 @@ Responsibilities:
 Compatible with the AST structure defined in parser.py.
 """
 
-from parser import Program, Declaration, Assignment, Value
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
+import importlib
+_parser_mod = importlib.import_module("parser")
+Program = _parser_mod.Program
+Declaration = _parser_mod.Declaration
+Assignment = _parser_mod.Assignment
+Value = _parser_mod.Value
 
 
 class SemanticError:
@@ -126,19 +134,31 @@ class SemanticAnalyzer:
         )
         return None
 
+    # Widening conversions allowed by the type system (matches symbol_table.py)
+    _WIDENING = {
+        "float":  {"int"},
+        "double": {"int", "float"},
+    }
+
     def check_type(self, expected_type, actual_type, node, context):
-        """Check whether two data types match."""
+        """Check whether two data types match (exact or widening)."""
 
         if actual_type is None:
             # The value has already produced an error.
             return
 
-        if expected_type != actual_type:
-            self.add_error(
-                f"Type mismatch in {context}: expected "
-                f"'{expected_type}', but got '{actual_type}'.",
-                node
-            )
+        if expected_type == actual_type:
+            return
+
+        # Allow widening numeric conversions (int→float, int→double, float→double)
+        if actual_type in self._WIDENING.get(expected_type, set()):
+            return
+
+        self.add_error(
+            f"Cannot assign {actual_type} to {expected_type} "
+            f"in {context}.",
+            node
+        )
 
     def analyze_declaration(self, node):
         """Check a variable declaration and its initializer."""
@@ -162,7 +182,7 @@ class SemanticAnalyzer:
         # Avoid overwriting an existing declaration.
         if name in self.symbol_table:
             self.add_error(
-                f"Variable '{name}' has already been declared.",
+                f"Variable '{name}' is already declared.",
                 node
             )
             return
@@ -177,7 +197,7 @@ class SemanticAnalyzer:
         # The target variable must be declared first.
         if name not in self.symbol_table:
             self.add_error(
-                f"Variable '{name}' is assigned before declaration.",
+                f"Variable '{name}' is not declared.",
                 node
             )
             return

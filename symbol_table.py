@@ -113,8 +113,22 @@ def _check_identifier_reference(table: SymbolTable, value: Any) -> None:
 
 
 def _value_contents(value: Any) -> Any:
-    """Unwrap the parser's Value AST node; leave ordinary Python values alone."""
-    return getattr(value, "value", value)
+    """Unwrap the parser's Value AST node; coerce to proper Python type."""
+    raw = getattr(value, "value", value)
+    vtype = getattr(value, "value_type", None)
+    if vtype == "NUMBER":
+        s = str(raw)
+        try:
+            if any(mark in s.lower() for mark in (".", "e")):
+                return float(s)
+            return int(s)
+        except (ValueError, OverflowError):
+            return raw
+    if vtype == "BOOL_LITERAL":
+        if isinstance(raw, bool):
+            return raw
+        return str(raw).lower() == "true"
+    return raw
 
 
 def _infer_value_type(value: Any) -> Optional[str]:
@@ -142,11 +156,16 @@ def _infer_value_type(value: Any) -> Optional[str]:
 
 
 def _is_compatible(destination: str, source: str) -> bool:
-    """Allow exact matches and widening numeric conversions."""
+    """Allow exact matches and widening numeric conversions.
+
+    Widening: int → float, int → double, float → double
+    i.e. a wider destination can accept a narrower source.
+    """
     if destination == source:
         return True
+    # Maps source type → set of destination types it can widen into
     widening = {"int": {"float", "double"}, "float": {"double"}}
-    return source in widening.get(destination, set())
+    return destination in widening.get(source, set())
 
 
 if __name__ == "__main__":
